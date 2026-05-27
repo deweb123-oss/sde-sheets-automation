@@ -1,0 +1,33 @@
+name: Sheets Automation
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Create credentials file
+        env:
+          KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+        run: |
+          echo "$KEY" > credentials.json
+          chmod 600 credentials.json
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run automation
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/credentials.json
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+        run: python main.py
